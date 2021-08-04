@@ -49,12 +49,29 @@ async def callback(request):
         return response.html(f"<center><h1>Invalid code provided</h1><p>Your IP address : {request.ip}</p></center>",
                              status=401)
     else:
-        json_web_token = jwt.encode({"session": str(uuid.uuid4())}, config["secret"], algorithm="HS256")
-        app.sessions[json_web_token] = data["access_token"]
+        session_uuid = str(uuid.uuid4())
+        json_web_token = jwt.encode({"session": session_uuid}, config["secret"], algorithm="HS256")
+        app.sessions[session_uuid] = data["access_token"]
         if redirect:
-            return response.text(f"Redirecting to {redirect} with jwt : {json_web_token}")
+            return response.text(f"{json_web_token}")
         else:
-            return response.text(f"Redirecting to Login with jwt : {json_web_token}")
+            return response.text(f"{json_web_token}")
+
+
+@app.route("/verify")
+async def verify(request):
+    code = request.args.get("code")
+    if not code:
+        return response.html(f"<center><h1>No code was provided</h1><p>Your IP address : {request.ip}</p></center>",
+                             status=406)
+    try:
+        session = jwt.decode(code, config["secret"], algorithms=["HS256"])["session"]
+    except:
+        return response.json(False)
+    if app.sessions.get(session):
+        return response.json(True)
+    else:
+        return response.json(False)
 
 
 @app.route("/favicon.ico")
