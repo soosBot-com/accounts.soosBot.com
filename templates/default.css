@@ -1,0 +1,24 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@600&display=swap");
+
+* {
+  font-family: "Quicksand", sans-serif;
+  color: white;
+
+}
+
+body {
+    background-color: #2c2f33;
+}
+
+h1, h2, h3, h4, h4, h6, p, img {
+    animation: fade 0.2s ease-in;
+    text-shadow: 2px 2px 2px black;
+}
+}
+
+@keyframes fade {
+    0% {
+        background-color: #2c2f33;
+        opacity: 0;
+    }
+}

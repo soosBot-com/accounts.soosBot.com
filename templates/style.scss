@@ -1,0 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@600&display=swap");
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Quicksand", sans-serif;
+}
+body {
+    background-color: rgb(38, 38, 38);
+}
+.main {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -80%);
+    text-align: center;
+    padding: 1em;
+    border-radius: 0.4em;
+    color: white;
+    box-shadow: 3px 3px 40px 6px black;
+
+    .button {
+        margin-top: 1em;
+        text-decoration: none;
+        border: none;
+        background-color: #525252;
+        padding: 0.5em;
+        color: white;
+        cursor: pointer;
+        transition: 0.2s;
+        border-radius: 0.2em;
+        &:hover {
+            background-color: #52525296;
+        }
+        &:active {
+            background-color: #52525248;
+        }
+    
+    }
+    .disabled-button {
+        margin-top: 1em;
+        text-decoration: none;
+        border: none;
+        background-color: #313131;
+        padding: 0.5em;
+        color: rgb(181, 181, 181);
+        cursor: pointer;
+        transition: 0.2s;
+        border-radius: 0.2em;
+        cursor: not-allowed;
+    }
+
+    img {
+        border-radius: 1em;
+        height: 5em;
+        width: 5em;
+        border: 5px solid #cecece;
+        box-shadow: 3px 3px 60px 6px #000;
+        margin-bottom: 0.5em;
+    }
+}

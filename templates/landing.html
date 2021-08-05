@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>soosBot Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <div class="main">
+        <img src="{{ profile_picture }}" alt="profile">
+        <h2>Welcome {{ username }}</h2>
+        <p>Where would you like to go?</p>
+        <button class="disabled-button" onclick="location.href='/?continue=home';" disabled>
+            <span style="color: rgb(186, 186, 186);">
+                <i class="fa fa-home"></i>
+            </span>
+            Home Page
+        </button>
+        <button class="button" onclick="location.href='/?continue=dash';" >
+            Dashboard
+        </button>
+        <button class="disabled-button" onclick="location.href='/?continue=dash';" disabled>
+            Posts
+        </button>
+        
+    </div>
+</body>
+</html>

@@ -1,5 +1,5 @@
 """soosBot login. login.soosBot.com"""
-
+import sanic
 from sanic import Sanic, response
 from sanic.exceptions import SanicException
 import jwt
@@ -7,10 +7,49 @@ import aiohttp
 import loader
 import uuid
 from datetime import datetime
+from jinja2 import Template
+from sanic_cors import CORS
 
-app = Sanic("soosBot login")
+app = Sanic("soosBot Login")
+CORS(app)
+
 config = loader.load_json("./config.json")
+
 app.sessions = {}
+
+
+async def verify_jwt(json_web_token, return_token=False):
+    try:
+        session = jwt.decode(json_web_token, config["secret"], algorithms=["HS256"])["session"]
+        print(session)
+        return session
+    except:
+        return False
+
+
+async def redirect_to_discord_login(continue_):
+    print("Trying to redirect to discord...")
+    if not continue_:
+        return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri"
+                                 "=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback&response_type=code&scope=identify"
+                                 "%20connections%20guilds")
+    else:
+        if continue_ == "home":
+            return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925"
+                                     "&redirect_uri=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback%2F%3Fcontinue%3Dhome"
+                                     "&response_type=code&scope=identify%20connections%20guilds")
+        elif continue_ == "dash":
+            return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925"
+                                     "&redirect_uri=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback%2F%3Fcontinue%3Ddash"
+                                     "&response_type=code&scope=identify%20connections%20guilds")
+        elif continue_ == "posts":
+            return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925"
+                                     "&redirect_uri=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback%2F%3Fcontinue%3Dposts"
+                                     "&response_type=code&scope=identify%20connections%20guilds")
+        else:
+            return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925"
+                                     "&redirect_uri=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback%2F%3Fcontinue%3Dhome"
+                                     "&response_type=code&scope=identify%20connections%20guilds")
 
 
 @app.route("/callback")
@@ -20,10 +59,12 @@ async def callback(request):
     redirect = None
     if not code:
         if request.args.get("error") == "access_denied":
-            return response.html(f"<center><h1>Discord Login Failed</h1></center>",
+            return response.html(f"<link rel='stylesheet' href='default.css'>"
+                                 f"<center><h1>Discord Login Failed</h1></center>",
                                  status=406)
         else:
-            return response.html(f"<center><h1>No code was provided</h1><p>Your IP address : {request.ip}</p></center>",
+            return response.html(f"<link rel='stylesheet' href='default.css'>"
+                                 f"<center><h1>No code was provided</h1><p>Your IP address : {request.ip}</p></center>",
                                  status=406)
     data = config["callback"]
     data["code"] = code
@@ -39,15 +80,16 @@ async def callback(request):
             data["redirect_uri"] = "http://192.168.1.224:3575/callback/?continue=posts"
             redirect = "posts"
         else:
-            return response.html(f"<center><h1>Invalid continue parameter provided</h1>"
-                                 f"<p>Your IP address : {request.ip}</p></center>"
-                                 , status=400)
+            return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925"
+                                     "&redirect_uri=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback%2F%3Fcontinue%3Dhome"
+                                     "&response_type=code&scope=identify%20connections%20guilds")
 
     async with aiohttp.ClientSession() as session:
         async with session.post(url=config["urls"]["callback"], data=data) as resp:
             data = await resp.json()
     if data.get("error"):
-        return response.html(f"<center><h1>Invalid code provided</h1><p>Your IP address : {request.ip}</p></center>",
+        return response.html(f"<link rel='stylesheet' href='default.css'>"
+                             f"<center><h1>Invalid code provided</h1><p>Your IP address : {request.ip}</p></center>",
                              status=401)
     else:
         session_uuid = str(uuid.uuid4())
@@ -58,16 +100,16 @@ async def callback(request):
             if redirect == "home":
                 resp = response.text(f"Redirecting to HomePage, jwt : {json_web_token}")
             elif redirect == "dash":
-                resp = response.text(f"Redirecting to Dashboard, jwt : {json_web_token}")
+                resp = response.redirect("http://192.168.1.224:3000")
             elif redirect == "posts":
                 resp = response.text(f"Redirecting to soosBot Posts, jwt : {json_web_token}")
         else:
             resp = response.redirect("/")
 
         resp.cookies["login"] = json_web_token
-        resp.cookies["login"]["httponly"] = True
         resp.cookies["login"]["samesite"] = "lax"
         resp.cookies["login"]["comment"] = "Login cookie that contains your login token. DO NOT SHARE"
+        resp.cookies['login']['domain'] = '192.168.1.224'
         resp.cookies["login"]["expires"] = datetime(2030, 5, 17)
         return resp
 
@@ -76,7 +118,8 @@ async def callback(request):
 async def verify(request):
     code = request.args.get("code")
     if not code:
-        return response.html(f"<center><h1>No code was provided</h1><p>Your IP address : {request.ip}</p></center>",
+        return response.html(f"<link rel='stylesheet' href='default.css'>"
+                             f"<center><h1>No code was provided</h1><p>Your IP address : {request.ip}</p></center>",
                              status=406)
     try:
         session = jwt.decode(code, config["secret"], algorithms=["HS256"])["session"]
@@ -89,20 +132,19 @@ async def verify(request):
 
 
 @app.route("/")
-async def test(request):
+async def home(request):
     code = request.cookies.get("login")
-    print(jwt)
     if not jwt:
-        return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri"
-                                 "=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback&response_type=code&scope=identify"
-                                 "%20connections%20guilds")
+        return await redirect_to_discord_login(request.args.get("continue"))
+    session = await verify_jwt(code)
+    if not session:
+        return await redirect_to_discord_login(request.args.get("continue"))
     try:
-        session = jwt.decode(code, config["secret"], algorithms=["HS256"])["session"]
+        print(app.sessions)
+        print(session)
+        session = app.sessions[session]
+        print("Success!")
     except:
-        return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri"
-                                 "=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback&response_type=code&scope=identify"
-                                 "%20connections%20guilds")
-    if not app.sessions.get(session):
         return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri"
                                  "=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback&response_type=code&scope=identify"
                                  "%20connections%20guilds")
@@ -113,16 +155,35 @@ async def test(request):
         elif continue_ == "posts":
             return response.text("Will redirect to posts with jwt")
         elif continue_ == "dash":
-            return response.text("Will redirect to dash with jwt")
+            return response.redirect("http://192.168.1.224:3000")
         else:
-            return response.html(f"<center><h1>Invalid continue parameter provided</h1>"
+            return response.html(f"<link rel='stylesheet' href='default.css'>"
+                                 f"<center><h1>Invalid continue parameter provided</h1>"
                                  f"<p>Your IP address : {request.ip}</p></center>"
                                  , status=400)
     else:
-        return response.text("HI! Your logged in and are not redirecting anywhere!")
+        with open("./templates/landing.html", "r", encoding='utf-8') as f:
+            text = f.read()
+        async with aiohttp.ClientSession() as sess:
+            async with sess.get(url=f"http://192.168.1.224/dashboard/user?token={session}") as resp:
+                data = await resp.json()
+        print(data)
+        if not data['avatar']:
+            avatar = f"https://cdn.discordapp.com/embed/avatars/{int(data['discriminator']) % 5}.png"
+        else:
+            avatar = f"https://cdn.discordapp.com/avatars/{data['id']}/{data['avatar']}"
+        return response.html(Template(text).render(username=f"{data['username']}#{data['discriminator']}",
+                                                   profile_picture=avatar))
 
 
+@app.route("/style.css")
+async def favicon(request):
+    return await response.file_stream("./templates/style.css")
 
+
+@app.route("/default.css")
+async def favicon(request):
+    return await response.file_stream("./templates/default.css")
 
 
 @app.route("/favicon.ico")
@@ -130,5 +191,12 @@ async def favicon(request):
     raise SanicException("There is no favicon yet.", status_code=404)
 
 
+@app.exception(sanic.exceptions.NotFound)
+async def _404(request, exception):
+    return response.html("<link rel='stylesheet' href='default.css'>"
+                         "<center><h1>404 Page not found</h1>"
+                         "<p>ay where you going? I can't figure it out..  </p></center>", status=404)
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=config["port"])
+    app.run(host="0.0.0.0", port=config["port"], debug=True)
