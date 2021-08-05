@@ -6,6 +6,7 @@ import jwt
 import aiohttp
 import loader
 import uuid
+from datetime import datetime
 
 app = Sanic("soosBot login")
 config = loader.load_json("./config.json")
@@ -52,10 +53,23 @@ async def callback(request):
         session_uuid = str(uuid.uuid4())
         json_web_token = jwt.encode({"session": session_uuid}, config["secret"], algorithm="HS256")
         app.sessions[session_uuid] = data["access_token"]
+        resp = response.text(f"{json_web_token}")
         if redirect:
-            return response.text(f"{json_web_token}")
+            if redirect == "home":
+                resp = response.text(f"Redirecting to HomePage, jwt : {json_web_token}")
+            elif redirect == "dash":
+                resp = response.text(f"Redirecting to Dashboard, jwt : {json_web_token}")
+            elif redirect == "posts":
+                resp = response.text(f"Redirecting to soosBot Posts, jwt : {json_web_token}")
         else:
-            return response.text(f"{json_web_token}")
+            resp = response.redirect("/")
+
+        resp.cookies["login"] = json_web_token
+        resp.cookies["login"]["httponly"] = True
+        resp.cookies["login"]["samesite"] = "lax"
+        resp.cookies["login"]["comment"] = "Login cookie that contains your login token. DO NOT SHARE"
+        resp.cookies["login"]["expires"] = datetime(2030, 5, 17)
+        return resp
 
 
 @app.route("/verify")
@@ -72,6 +86,43 @@ async def verify(request):
         return response.json(True)
     else:
         return response.json(False)
+
+
+@app.route("/")
+async def test(request):
+    code = request.cookies.get("login")
+    print(jwt)
+    if not jwt:
+        return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri"
+                                 "=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback&response_type=code&scope=identify"
+                                 "%20connections%20guilds")
+    try:
+        session = jwt.decode(code, config["secret"], algorithms=["HS256"])["session"]
+    except:
+        return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri"
+                                 "=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback&response_type=code&scope=identify"
+                                 "%20connections%20guilds")
+    if not app.sessions.get(session):
+        return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri"
+                                 "=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback&response_type=code&scope=identify"
+                                 "%20connections%20guilds")
+    continue_ = request.args.get("continue")
+    if continue_:
+        if continue_ == "home":
+            return response.text("Will redirect to home with jwt")
+        elif continue_ == "posts":
+            return response.text("Will redirect to posts with jwt")
+        elif continue_ == "dash":
+            return response.text("Will redirect to dash with jwt")
+        else:
+            return response.html(f"<center><h1>Invalid continue parameter provided</h1>"
+                                 f"<p>Your IP address : {request.ip}</p></center>"
+                                 , status=400)
+    else:
+        return response.text("HI! Your logged in and are not redirecting anywhere!")
+
+
+
 
 
 @app.route("/favicon.ico")
