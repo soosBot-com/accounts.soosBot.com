@@ -116,7 +116,7 @@ async def callback(request):
 
 @app.route("/verify")
 async def verify(request):
-    code = request.args.get("code")
+    code = request.args.get("session")
     if not code:
         return response.html(f"<link rel='stylesheet' href='default.css'>"
                              f"<center><h1>No code was provided</h1><p>Your IP address : {request.ip}</p></center>",
@@ -145,9 +145,7 @@ async def home(request):
         session = app.sessions[session]
         print("Success!")
     except:
-        return response.redirect("https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri"
-                                 "=http%3A%2F%2F192.168.1.224%3A3575%2Fcallback&response_type=code&scope=identify"
-                                 "%20connections%20guilds")
+        return await redirect_to_discord_login(request.args.get("continue"))
     continue_ = request.args.get("continue")
     if continue_:
         if continue_ == "home":
@@ -165,7 +163,7 @@ async def home(request):
         with open("./templates/landing.html", "r", encoding='utf-8') as f:
             text = f.read()
         async with aiohttp.ClientSession() as sess:
-            async with sess.get(url=f"http://192.168.1.224/dashboard/user?token={session}") as resp:
+            async with sess.get(url=f"http://192.168.1.224/user?session={session}") as resp:
                 data = await resp.json()
         print(data)
         if not data['avatar']:
@@ -174,6 +172,27 @@ async def home(request):
             avatar = f"https://cdn.discordapp.com/avatars/{data['id']}/{data['avatar']}"
         return response.html(Template(text).render(username=f"{data['username']}#{data['discriminator']}",
                                                    profile_picture=avatar))
+
+
+@app.route("/access-code")
+async def return_access_code(request):
+    password = request.args.get("password")
+    if not password:
+        return response.html("<link rel='stylesheet' href='default.css'>"
+                             "<center><h1>404 Page not found</h1>"
+                             "<p>ay where you going? I can't figure it out..  </p></center>", status=404)
+    elif password == config["API-PASS"]:
+        session = request.args.get("session")
+        verification = await verify_jwt(session, True)
+        if not verification:
+            return response.json(False)
+        else:
+            return response.json(app.sessions[verification])
+    else:
+        return response.html("<link rel='stylesheet' href='default.css'>"
+                             "<center><h1>404 Page not found</h1>"
+                             "<p>ay where you going? I can't figure it out..  </p></center>", status=404)
+
 
 
 @app.route("/style.css")
