@@ -7,8 +7,11 @@ import "./style/style.css"
 
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
+import { AnimatePresence } from 'framer-motion'
+
 ReactDOM.render(
   <React.StrictMode>
+    <AnimatePresence>
     <Router>
       <Routes>
         <Route path="/callback/discord" element={ <Discord/> } />
@@ -16,6 +19,7 @@ ReactDOM.render(
         <Route path="/" element={ <App/> } />
       </Routes>
     </Router>
+    </AnimatePresence>
   </React.StrictMode>,
   document.getElementById('root')
 );

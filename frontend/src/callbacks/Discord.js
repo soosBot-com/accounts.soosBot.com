@@ -12,8 +12,11 @@ function Discord() {
         if (accounts === null) {
             accounts = [];
         }
-        accounts.push(code);
-        localStorage.setItem("accounts", JSON.stringify(accounts));
+        // Check if the code is already in the array
+        if (accounts.indexOf(code) === -1) {
+            accounts.push(code);
+            localStorage.setItem("accounts", JSON.stringify(accounts));
+        }
         navigate("/");
     }, []);
 

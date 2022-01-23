@@ -10,6 +10,9 @@
 
 body {
     background-color: rgb(26, 26, 26);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
 }
 
 .account_and_logout_button {
@@ -22,13 +25,17 @@ body {
         background-color: rgba(255, 0, 0, 0.212);
         border: none;
         padding: 0.3em;
-        margin-left: 0.6em;
+        margin-left: 0.93em;
         border-radius: 0.2em;
         transition: all 0.3s ease-in-out;
 
         &:hover {
-            background-color: rgba(255, 0, 0, 0.5);
+            background-color: rgba(255, 0, 0, 0.342);
             cursor: pointer;
+        }
+
+        &:active {
+            background-color: rgba(255, 0, 0, 0.486);
         }
     }
 }
@@ -44,8 +51,8 @@ body {
     align-items: center;
     border-radius: 0.3em;
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.42);
-    max-width: 17em;
-    min-width: 12em;
+    max-width: 18em !important;
+    min-width: 18em !important;
 
 
 
@@ -55,7 +62,16 @@ body {
     h3 {
         color: white;
         padding-top: 0.1em;
-        padding-bottom: 0.7em;
+        padding-bottom: 0.3em;
+    }
+    .seperator {
+        // Style the br attribute 
+        background-color: rgb(41, 41, 41);
+        border-radius: 0.2em;
+        width: 60%;
+        height: 0.1em;
+        margin-top: 0.1em;
+        margin-bottom: 1em;
     }
     overflow: hidden;
 
@@ -104,9 +120,9 @@ body {
     }
 
     .edit {
-        margin-top: 0.4em;
+        margin-top: 0.6em;
         margin-right: auto;
-        margin-left: 0.9em;
+        margin-left: 0.75em;
         /* Rectangle 9 */
         border-radius: 0.2em;
         border: rgba(0, 0, 0, 0.309) 1px solid;
@@ -143,4 +159,9 @@ body {
         }
     }
     
+}
+
+.soosBot {
+    color: white;
+    margin-top: 0.5em;
 }
