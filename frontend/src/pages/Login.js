@@ -1,24 +1,29 @@
 import { motion } from "framer-motion";
+import PageAnimator from "../components/PageAnimator";
 
 function Login() {
     return (
-        <motion.div>
-        <div className="login">
-            <div className="login-header">
-                <h1>Login</h1>
-            </div>
-            <div className="login_methods">
-                <div className="discord">
-                    <button onClick={DiscordLogin}>Login with discord</button>
+        <>
+            <PageAnimator>
+                <div className="content">
+                <div className="login">
+                    <div className="login-header">
+                        <h1>Login</h1>
+                    </div>
+                    <div className="login_methods">
+                        <div className="discord">
+                            <button onClick={DiscordLogin}>Login with discord</button>
+                        </div>
+                        <div className="google"></div>
+                        <div className="apple"></div>
+                    </div>
                 </div>
-                <div className="google"></div>
-                <div className="apple"></div>
+                </div>
+            </PageAnimator>
+            <div className="soosBot">
+                <span>soosBot</span>
             </div>
-        </div>
-        <div className="soosBot">
-            <span>soosBot</span>
-        </div>
-        </motion.div>
+        </>
     );
 }
 
