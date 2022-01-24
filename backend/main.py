@@ -52,7 +52,7 @@ async def callback(request):
             print(resp.headers)
     print(data)
 
-    return response.redirect("http://192.168.1.224:3000/callback/discord?code=" + data["access_token"])
+    return response.redirect("http://192.168.1.224:3000/callbacks/discord?code=" + data["access_token"])
 
 
 @app.route("/revoke")
