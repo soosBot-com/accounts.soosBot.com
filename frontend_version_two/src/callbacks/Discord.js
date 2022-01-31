@@ -2,23 +2,28 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useEffect, useRef } from 'react';
 
 function Discord() {
-    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useRef(useNavigate());
 
 
     useEffect(() => {
-        let code = searchParams.get("code");
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code')
+
+
         let accounts = JSON.parse(localStorage.getItem("accounts"));
-        if (code == null) {
-            navigate.current("/login");
-            return;
-        }
 
         if (accounts == null) {
             accounts = [];
         }
 
+        if (code == null) {
+            console.log("No code found");
+            navigate.current("/login");
+            return;
+        }
+
         if (accounts.includes(code)) {
+            console.log(`Account ${code} already exists`);
             navigate.current("/");
             return;
         }
@@ -28,7 +33,7 @@ function Discord() {
         navigate.current("/");
 
 
-    }, [searchParams])
+    }, [])
 
     return null;
 

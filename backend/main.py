@@ -32,7 +32,8 @@ async def cors(request, resp):
 @app.route("/")
 async def index(request):
     return response.redirect(
-        "https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri=http%3A%2F%2F192.168.1.224%3A8172%2Fcallback&response_type=code&scope=identify%20connections%20guilds")
+        "https://discord.com/api/oauth2/authorize?client_id=762361400903204925&redirect_uri=http%3A%2F%2F192.168.1.224%3A8172%2Fcallback&response_type=code&scope=identify%20connections%20guilds"
+    )
 
 
 @app.route("/callback")
@@ -44,15 +45,14 @@ async def callback(request):
     data = config["default_callback_data"]
     data["code"] = code
     data["redirect_uri"] = get_redirect_uri(request.args.get("continue", None))
-    print(data)
 
     async with aiohttp.ClientSession() as session:
         async with session.post(url=config["discord_oauth_url"], data=data) as resp:
             data = await resp.json()
-            print(resp.headers)
-    print(data)
+            print(data)
+    bruh = "http://192.168.1.224:3000/callbacks/discord?code=" + data["access_token"]
 
-    return response.redirect("http://192.168.1.224:3000/callbacks/discord?code=" + data["access_token"])
+    return response.redirect(bruh)
 
 
 @app.route("/revoke")
@@ -83,13 +83,12 @@ async def profile_data(request):
     code = request.args.get('code', None)
     if not code:
         raise SanicException(status_code=400)
-    print(code)
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url="https://discord.com/api/v9/" + "users/@me",
                                headers={"Authorization": "Bearer " + code}) as resp:
             data = await resp.json()
-            print(data)
+
 
     if data.get("message", None):
         return response.json({"valid:": False})
